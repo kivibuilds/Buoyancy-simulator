@@ -1,0 +1,409 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌊 Buoyancy Simulator - Interactive Physics Lab</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+
+<!-- ============================================
+     LOADING OVERLAY
+     ============================================ -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div style="font-size: 4rem; margin-bottom: 15px;">🌊</div>
+    <div class="loading-title">Buoyancy Simulator</div>
+    <div class="loading-bar-track">
+        <div class="loading-bar-fill"></div>
+    </div>
+    <div class="loading-sub">Loading Interactive Physics Lab...</div>
+</div>
+
+<!-- ============================================
+     BACKGROUND SCENE
+     ============================================ -->
+<div class="background-scene">
+    <div class="sun"></div>
+    <div class="cloud cloud-1"></div>
+    <div class="cloud cloud-2" style="animation-delay: -12s;"></div>
+    <div class="cloud cloud-3" style="animation-delay: -6s;"></div>
+</div>
+
+<!-- ============================================
+     TOAST NOTIFICATION
+     ============================================ -->
+<div class="toast" id="toast">🌊 Splash!</div>
+
+<!-- ============================================
+     MAIN APP
+     ============================================ -->
+<div class="app-wrapper">
+
+    <!-- HEADER -->
+    <header class="app-header">
+        <h1 class="app-title">🌊 Buoyancy Simulator</h1>
+        <p class="app-subtitle">Interactive Physics Lab · Archimedes' Principle · Real-time Simulation</p>
+        <div class="header-badges">
+            <span class="badge">🔬 Scientifically Accurate</span>
+            <span class="badge">📚 Educational</span>
+            <span class="badge">🎮 Interactive</span>
+            <span class="badge">🏫 School Ready</span>
+        </div>
+    </header>
+
+    <!-- MAIN GRID -->
+    <div class="main-grid">
+
+        <!-- ============================================
+             LEFT PANEL - CONTROLS
+             ============================================ -->
+        <aside class="panel-card controls-panel">
+            <div class="panel-title">
+                <span class="icon">🎛️</span> Controls
+            </div>
+
+            <!-- MASS SLIDER -->
+            <div class="control-group">
+                <div class="control-label">
+                    <span class="control-name">
+                        ⚖️ Object Mass
+                        <span class="tooltip-container">
+                            <span class="tooltip-icon">?</span>
+                            <span class="tooltip-text">Mass is the amount of matter in an object. More mass = heavier object. Measured in kilograms (kg).</span>
+                        </span>
+                    </span>
+                    <span class="control-value value-mass" id="massDisplay">5.0 kg</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" id="massSlider" class="slider-mass"
+                           min="0.1" max="50" step="0.1" value="5">
+                    <div class="slider-minmax"><span>0.1 kg</span><span>50 kg</span></div>
+                </div>
+            </div>
+
+            <!-- VOLUME SLIDER -->
+            <div class="control-group">
+                <div class="control-label">
+                    <span class="control-name">
+                        📦 Object Volume
+                        <span class="tooltip-container">
+                            <span class="tooltip-icon">?</span>
+                            <span class="tooltip-text">Volume is the amount of space an object occupies. Measured in cubic meters (m³). More volume = bulkier object.</span>
+                        </span>
+                    </span>
+                    <span class="control-value value-volume" id="volumeDisplay">0.010 m³</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" id="volumeSlider" class="slider-volume"
+                           min="0.001" max="0.1" step="0.001" value="0.01">
+                    <div class="slider-minmax"><span>0.001</span><span>0.1 m³</span></div>
+                </div>
+            </div>
+
+            <!-- LIQUID DENSITY SLIDER -->
+            <div class="control-group">
+                <div class="control-label">
+                    <span class="control-name">
+                        🌊 Liquid Density
+                        <span class="tooltip-container">
+                            <span class="tooltip-icon">?</span>
+                            <span class="tooltip-text">Liquid density determines how buoyant it is. Denser liquids (like salt water or mercury) push objects up more strongly.</span>
+                        </span>
+                    </span>
+                    <span class="control-value value-liquid" id="liquidDensityDisplay">1000 kg/m³</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" id="liquidDensitySlider" class="slider-liquid"
+                           min="500" max="14000" step="10" value="1000">
+                    <div class="slider-minmax"><span>500</span><span>14000 kg/m³</span></div>
+                </div>
+            </div>
+
+            <!-- LIQUID PRESETS -->
+            <div class="control-group">
+                <div class="control-name" style="margin-bottom: 8px;">
+                    🧪 Liquid Type
+                    <span class="tooltip-container">
+                        <span class="tooltip-icon">?</span>
+                        <span class="tooltip-text">Different liquids have different densities. Mercury is 13.6x denser than water, so objects float more easily in it!</span>
+                    </span>
+                </div>
+                <div class="liquid-selector">
+                    <button class="liquid-btn liquid-water active" onclick="setLiquid('water')" id="btn-water">
+                        💧 Water<br><small>1000 kg/m³</small>
+                    </button>
+                    <button class="liquid-btn liquid-oil" onclick="setLiquid('oil')" id="btn-oil">
+                        🫙 Oil<br><small>800 kg/m³</small>
+                    </button>
+                    <button class="liquid-btn liquid-saltwater" onclick="setLiquid('saltwater')" id="btn-saltwater">
+                        🌊 Salt Water<br><small>1025 kg/m³</small>
+                    </button>
+                    <button class="liquid-btn liquid-mercury" onclick="setLiquid('mercury')" id="btn-mercury">
+                        ⚗️ Mercury<br><small>13600 kg/m³</small>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SHAPE SELECTOR -->
+            <div class="control-group">
+                <div class="control-name" style="margin-bottom: 8px;">🔷 Object Shape</div>
+                <div class="shape-selector" id="shapeSelector">
+                    <button class="shape-btn active" onclick="setShape('cube')" id="shape-cube">
+                        <span class="shape-icon">🟦</span>Cube
+                    </button>
+                    <button class="shape-btn" onclick="setShape('sphere')" id="shape-sphere">
+                        <span class="shape-icon">🔵</span>Sphere
+                    </button>
+                    <button class="shape-btn" onclick="setShape('cylinder')" id="shape-cylinder">
+                        <span class="shape-icon">🥫</span>Cylinder
+                    </button>
+                    <button class="shape-btn" onclick="setShape('boat')" id="shape-boat">
+                        <span class="shape-icon">🚤</span>Boat
+                    </button>
+                </div>
+            </div>
+
+            <!-- ACTION BUTTONS -->
+            <div class="btn-group">
+                <button class="btn btn-drop" onclick="dropObject()">
+                    💧 Drop Object
+                </button>
+                <button class="btn btn-random" onclick="randomize()">
+                    🎲 Randomize Values
+                </button>
+                <button class="btn btn-reset" onclick="resetSimulation()">
+                    🔄 Reset Simulation
+                </button>
+            </div>
+        </aside>
+
+        <!-- ============================================
+             CENTER - SIMULATION
+             ============================================ -->
+        <main class="simulation-area">
+
+            <!-- CANVAS TANK -->
+            <div class="tank-container">
+                <canvas id="simulationCanvas" height="420"></canvas>
+
+                <!-- Legend -->
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #42A5F5;"></div>
+                        <span>Buoyant Force ↑</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #EF5350;"></div>
+                        <span>Gravity ↓</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgba(100,200,255,0.5);"></div>
+                        <span>Liquid</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #FFA726;"></div>
+                        <span>Object</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATUS BANNER -->
+            <div class="status-banner floating" id="statusBanner">
+                <span id="statusIcon">🟢</span>
+                <span id="statusText">Object is FLOATING!</span>
+            </div>
+
+            <!-- FORMULA BREAKDOWN -->
+            <div class="formula-display">
+                <div class="formula-title">📐 Live Formula Breakdown</div>
+                <div class="formula-row">
+                    <div class="formula-part variable">
+                        <span class="label">Density (ρ)</span>
+                        <span class="value" id="fDensity">500.0</span>
+                        <span class="label">kg/m³</span>
+                    </div>
+                    <div class="formula-part operator">=</div>
+                    <div class="formula-part variable">
+                        <span class="label">Mass (m)</span>
+                        <span class="value" id="fMass">5.0</span>
+                        <span class="label">kg</span>
+                    </div>
+                    <div class="formula-part operator">÷</div>
+                    <div class="formula-part variable">
+                        <span class="label">Volume (V)</span>
+                        <span class="value" id="fVolume">0.010</span>
+                        <span class="label">m³</span>
+                    </div>
+                </div>
+                <div class="formula-row">
+                    <div class="formula-part result">
+                        <span class="label">Buoyant Force (Fb)</span>
+                        <span class="value" id="fBuoyant">98.1 N</span>
+                    </div>
+                    <div class="formula-part operator">=</div>
+                    <div class="formula-part variable">
+                        <span class="label">ρ_liquid</span>
+                        <span class="value" id="fRhoL">1000</span>
+                    </div>
+                    <div class="formula-part operator">×</div>
+                    <div class="formula-part variable">
+                        <span class="label">V (submerged)</span>
+                        <span class="value" id="fVSub">0.010</span>
+                    </div>
+                    <div class="formula-part operator">×</div>
+                    <div class="formula-part variable">
+                        <span class="label">g</span>
+                        <span class="value">9.81</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EDUCATION STRIP - Bottom -->
+            <div class="edu-strip">
+                <div class="edu-card edu-card-float" onclick="showEduInfo('float')">
+                    <span class="edu-icon">🛶</span>
+                    <div class="edu-card-title">Why Objects Float</div>
+                    <div class="edu-card-text">When object density &lt; liquid density, buoyant force &gt; gravity → <strong>FLOAT!</strong></div>
+                </div>
+                <div class="edu-card edu-card-sink" onclick="showEduInfo('sink')">
+                    <span class="edu-icon">⚓</span>
+                    <div class="edu-card-title">Why Objects Sink</div>
+                    <div class="edu-card-text">When object density &gt; liquid density, gravity &gt; buoyant force → <strong>SINK!</strong></div>
+                </div>
+                <div class="edu-card edu-card-neutral" onclick="showEduInfo('neutral')">
+                    <span class="edu-icon">🐟</span>
+                    <div class="edu-card-title">Neutral Buoyancy</div>
+                    <div class="edu-card-text">When densities are equal, forces balance → Object <strong>hovers!</strong> Like submarines & fish!</div>
+                </div>
+                <div class="edu-card edu-card-archimedes" onclick="showEduInfo('archimedes')">
+                    <span class="edu-icon">🏛️</span>
+                    <div class="edu-card-title">Archimedes Principle</div>
+                    <div class="edu-card-text">Upward force = weight of <strong>displaced liquid</strong>. Discovered ~250 BC!</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- ============================================
+             RIGHT PANEL - DATA & INFO
+             ============================================ -->
+        <aside class="panel-card info-panel">
+            <div class="panel-title">
+                <span class="icon">📊</span> Live Data
+            </div>
+
+            <!-- DATA CARDS -->
+            <div class="data-display">
+                <div class="data-card dc-obj-density">
+                    <span class="data-card-label">Object Density</span>
+                    <span class="data-card-value" id="objDensity">500.0</span>
+                    <span class="data-card-unit">kg/m³</span>
+                </div>
+                <div class="data-card dc-buoyant">
+                    <span class="data-card-label">Buoyant Force ↑</span>
+                    <span class="data-card-value" id="buoyantForce">98.1 N</span>
+                    <span class="data-card-unit">Newtons</span>
+                </div>
+                <div class="data-card dc-gravity">
+                    <span class="data-card-label">Gravity ↓</span>
+                    <span class="data-card-value" id="gravityForce">49.1 N</span>
+                    <span class="data-card-unit">Newtons</span>
+                </div>
+                <div class="data-card dc-displaced">
+                    <span class="data-card-label">Water Displaced</span>
+                    <span class="data-card-value" id="displacedMass">5.0 kg</span>
+                    <span class="data-card-unit">kilograms</span>
+                </div>
+                <div class="data-card dc-net">
+                    <span class="data-card-label">Net Force</span>
+                    <span class="data-card-value" id="netForce">+49.0 N</span>
+                    <span class="data-card-unit">↑ = Float · ↓ = Sink</span>
+                </div>
+            </div>
+
+            <!-- DENSITY COMPARISON -->
+            <div class="density-compare">
+                <div class="density-bubble object-bubble">
+                    <span class="d-value" id="dc-objDensity">500</span>
+                    <span class="d-label">Object<br>kg/m³</span>
+                </div>
+                <div class="density-vs" id="densityVsSymbol">VS</div>
+                <div class="density-bubble liquid-bubble">
+                    <span class="d-value" id="dc-liqDensity">1000</span>
+                    <span class="d-label">Liquid<br>kg/m³</span>
+                </div>
+            </div>
+
+            <!-- FORCE COMPARISON BARS -->
+            <div class="force-comparison">
+                <div class="force-title">⚡ Force Comparison</div>
+
+                <div class="force-bar-group">
+                    <div class="force-bar-label">
+                        <span>🔵 Buoyant Force</span>
+                        <span id="fb-val">98.1 N</span>
+                    </div>
+                    <div class="force-bar-track">
+                        <div class="force-bar-fill buoyant" id="buoyantBar" style="width: 70%"></div>
+                    </div>
+                </div>
+
+                <div class="force-bar-group">
+                    <div class="force-bar-label">
+                        <span>🔴 Gravity Force</span>
+                        <span id="fg-val">49.1 N</span>
+                    </div>
+                    <div class="force-bar-track">
+                        <div class="force-bar-fill gravity" id="gravityBar" style="width: 35%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ARCHIMEDES BOX -->
+            <div class="archimedes-box">
+                <div class="archimedes-title">
+                    🏛️ Archimedes' Principle
+                </div>
+                <div class="archimedes-text">
+                    <em>"An object immersed in a fluid experiences an <strong>upward buoyant force</strong> equal to the <strong>weight of the fluid displaced</strong>."</em>
+                    <br><br>
+                    <strong>Fb = ρ_liquid × V_submerged × g</strong>
+                    <br><br>
+                    This object displaces <strong id="archDisplaced">5.0 kg</strong> of liquid, 
+                    generating a buoyant force of <strong id="archFb">49.1 N</strong>!
+                </div>
+            </div>
+
+            <!-- EXPLANATION -->
+            <div class="panel-card" style="background: linear-gradient(135deg, #E8EAF6, #C5CAE9); border: 2px solid #7986CB; margin-top: 0; padding: 12px;">
+                <div class="panel-title" style="font-size: 0.82rem; margin-bottom: 8px; border: none; padding: 0;">
+                    🧠 Scientific Explanation
+                </div>
+                <div style="font-size: 0.75rem; line-height: 1.6; color: #1A237E;" id="sciExplanation">
+                    The object has a density of <strong id="expObjDensity">500.0</strong> kg/m³ 
+                    while the liquid has a density of <strong id="expLiqDensity">1000</strong> kg/m³.
+                    <br><br>
+                    Since object density is <strong id="expComparison">less than</strong> liquid density, 
+                    the buoyant force exceeds gravity. The object <strong id="expState">floats</strong>!
+                </div>
+            </div>
+        </aside>
+    </div><!-- END MAIN GRID -->
+</div><!-- END APP WRAPPER -->
+
+
+<!-- ============================================
+     JAVASCRIPT - loaded in dependency order
+     ============================================ -->
+<script src="state.js"></script>
+<script src="physics.js"></script>
+<script src="renderer.js"></script>
+<script src="particles.js"></script>
+<script src="controls.js"></script>
+<script src="ui-feedback.js"></script>
+<script src="main.js"></script>
+
+</body>
+</html>
